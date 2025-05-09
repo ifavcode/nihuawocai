@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+html {
+  --primary-color: #2b7fff;
+  @apply bg-gray-50;
+}
+
+@theme {
+  --color-primary: var(--primary-color);
+}
+
+.hover-primary {
+  &:hover {
+    color: var(--primary-color);
+  }
+}
