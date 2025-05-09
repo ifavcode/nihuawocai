@@ -59,10 +59,9 @@ draw-guess-java为后端代码、draw-guess-front为前端代码
 
 3、启动
 
-![等待节目](C:\Users\rog\Pictures\等待节目.png)
+![QQ20250423-174803](https://ifavcode.github.io/images/QQ20250423-174803.png)
 
-![QQ20250423-174836](C:\Users\rog\Pictures\QQ20250423-174836.png)
+![QQ20250423-174836](https://ifavcode.github.io/images/QQ20250423-174836.png)
+![QQ20250423-174909](https://ifavcode.github.io/images/QQ20250423-174909.png)
+![等待节目](https://ifavcode.github.io/images/等待节目.png)
 
-![QQ20250423-174803](C:\Users\rog\Pictures\QQ20250423-174803.png)
-
-![QQ20250423-174909](C:\Users\rog\Pictures\QQ20250423-174909.png)
