@@ -16,8 +16,8 @@ spring:
       max-wait: 10000
   data:
     redis:
-      host: 47.99.113.58
-      password: asd1245+asd
+      host: ${draw.redis.host}
+      password: ${draw.redis.password}
       port: 6379
   jpa:
     generate-ddl: true

@@ -6,3 +6,6 @@ draw:
     url: jdbc:mysql://127.0.0.1:3306/draw-guess?allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
+  redis:
+    host: 47.99.113.58
+    password: asd1245+asd

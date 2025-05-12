@@ -45,7 +45,11 @@ https://www.guetzjb.cn/draw/#/index?roomName=test
   - 游戏状态协议
   - 系统通知协议
 
-draw-guess-java为后端代码、draw-guess-front为前端代码
+```plaintext
+nihuawocai/
+├── draw-guess-java  // 后端代码
+├── draw-guess-front // 前端代码
+```
 
 #### 细节
 
@@ -65,17 +69,62 @@ draw-guess-java为后端代码、draw-guess-front为前端代码
 
 ##### **前端启动步骤**
 
-1、`pnpm i`
+1、安装node.js
 
-2、`pnpm dev`
+2、`npm install -g pnpm`
+
+3、`pnpm i`
+
+4、`pnpm dev`
 
 ##### **后端启动步骤**
 
-1、使用sql文件创建基础数据
+1、安装并配置好mysql,redis,maven,java21(必选)和navicat(可选)
 
-2、配置好redis以及mysql
+- 配置MYSQL数据库
 
-3、启动
+```sql
+mysql -u username -p
+
+# 使用cmd或者使用navicat，以下是cmd示例
+mysql> CREATE DATABASE draw-guess
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_general_ci;
+mysql> USE draw-guess;
+mysql> SOURCE draw-guess.sql;# 你的sql路径
+
+# 修改项目中mysql的账号密码
+# draw-guess-java/src/main/resources/application-dev.yml
+```
+
+- 配置redis
+
+```sh
+# 修改项目中redis的地址、密码
+# draw-guess-java/src/main/resources/application-dev.yml
+```
+
+application-dev.yml示例配置如下
+
+```yml
+draw:
+  max-person: 6 # 房间内最大人数
+  seconds: 60 # 每盘游戏画画时间
+  ns: /draw-socket # websocket转发url
+  db: # mysql
+    url: jdbc:mysql://127.0.0.1:3306/draw-guess?allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+  redis: # redis
+    host: 127.0.0.1
+    password: 123456
+```
+
+2、在后端代码根目录运行`mvn clean install`，等待构筑完成
+
+3、找到构筑完成的jar,在cmd输入`java -jar [构筑完的jar文件名字].jar`
+
+现在，你可以启动后端项目，并且访问你的页面http://localhost:5173
 
 #### 项目浏览
 
