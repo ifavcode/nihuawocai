@@ -75,7 +75,7 @@ draw-guess-java为后端代码、draw-guess-front为前端代码
 
 ##### **后端启动步骤**
 
-1.安装并配置好mysql,redis,maven(必选)和navicat(可选)
+1.安装并配置好mysql,redis,maven,java21(必选)和navicat(可选)
 
 2.创建draw-guess数据库并使用navicat运行sql文件
 
