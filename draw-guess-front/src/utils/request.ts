@@ -13,7 +13,7 @@ const noTipsPath = ["/user/profile", "/auth/login"];
 
 const client = Axios.create({
   baseURL: `http${
-    import.meta.env.MODE === "development" ? "" : "s"
+    import.meta.env.MODE === "development" ? "" : ""
   }://${host}${pathRewrite}`,
   timeout: 1000 * 10,
 });

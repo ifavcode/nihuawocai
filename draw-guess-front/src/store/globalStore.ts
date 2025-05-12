@@ -15,6 +15,8 @@ import Cookies from "js-cookie";
 import { getRoomStatusApi } from "@/api/draw";
 import { pathRewrite } from "@/utils/request";
 
+const host = window.location.host;
+
 export const useGlobalStore = defineStore("global", () => {
   const socket = ref<Socket | null>(null);
   const onlineUsers = ref<RoomUserInOut>({
@@ -42,16 +44,21 @@ export const useGlobalStore = defineStore("global", () => {
   });
 
   async function init(roomName: string = "public") {
+    /**
+     * 开发模式时
+     * VITE_WS_URL填写http://127.0.0.1:9000/draw-socket 直连不通过nginx
+     * VITE_WS_PATH填写/socket.io 不通过nginx
+     * 
+     * 生产模式时
+     * VITE_WS_URL填写/draw-socket自动填写host地址 通过nginx转发
+     * VITE_WS_PATH填写/draw-socket/socket.io 通过nginx转发
+     */
     socket.value = io(
-      import.meta.env.VITE_WS_URL +
-        `?room=${roomName}&${Constant.JWT_HEADER_NAME}=${
-          Cookies.get(Constant.JWT_HEADER_NAME) || ""
-        }`,
+      (import.meta.env.MODE === "development" ? "" : host) + import.meta.env.VITE_WS_URL +
+      `?room=${roomName}&${Constant.JWT_HEADER_NAME}=${Cookies.get(Constant.JWT_HEADER_NAME) || ""
+      }`,
       {
         path: import.meta.env.VITE_WS_PATH,
-        // extraHeaders: {
-        //   [Constant.JWT_HEADER_NAME]: Cookies.get(Constant.JWT_HEADER_NAME) || "",
-        // },
         withCredentials: true,
         secure: true,
         transports: ["websocket"],
@@ -68,7 +75,6 @@ export const useGlobalStore = defineStore("global", () => {
     });
 
     socket.value.on(DrawEnum.GET_ONLINE_USERS, (data) => {
-      const maxPerson = (import.meta.env.VITE_MAX_PERSON || "6") * 1;
       onlineUsers.value = data as RoomUserInOut;
     });
 

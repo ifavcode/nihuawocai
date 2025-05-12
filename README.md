@@ -104,6 +104,24 @@ mysql> SOURCE draw-guess.sql;# 你的sql路径
 # draw-guess-java/src/main/resources/application-dev.yml
 ```
 
+- oss配置
+
+```yaml
+# application.yml
+oss:
+  region: cn-shanghai
+  endpoint: https://oss-cn-shanghai.aliyuncs.com
+  domain: https://oss.guetzjb.cn/
+  bucket: oss-pai-hdzvw7bjvj2tv17tu8-cn-shanghai
+```
+
+设置oss环境变量**（若不保存可跳过）**
+
+```sh
+set OSS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+set OSS_ACCESS_KEY_SECRET=YOUR_SECRET
+```
+
 application-dev.yml示例配置如下
 
 ```yml
@@ -120,11 +138,29 @@ draw:
     password: 123456
 ```
 
+**每一轮画画结束，系统会自动保存结果到oss存储中**
+
 2、在后端代码根目录运行`mvn clean install`，等待构筑完成
 
 3、找到构筑完成的jar,在cmd输入`java -jar [构筑完的jar文件名字].jar`
 
 现在，你可以启动后端项目，并且访问你的页面http://localhost:5173
+
+#### Docker启动
+
+```sh
+# 克隆项目
+git clone https://github.com/ifavcode/nihuawocai.git
+# 补充oss环境变量（docker-compose.yml）可选
+- OSS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+- OSS_ACCESS_KEY_SECRET=YOUR_SECRET
+# 启动
+docker compose up -d
+```
+
+使用到的镜像
+
+> maven:3.9-eclipse-temurin-21、eclipse-temurin:21-jre、node:20、nginx:alpine、mysql:8.0、redis:alpine
 
 #### 项目浏览
 

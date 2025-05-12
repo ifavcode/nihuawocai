@@ -1,0 +1,62 @@
+services:
+  backend:
+    build:
+      context: ./draw-guess-java
+      dockerfile: Dockerfile
+    ports:
+      - "8866:8866"
+      - "9000:9000"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DRAW_DB_URL=jdbc:mysql://db:3306/draw-guess?allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      - DRAW_DB_USERNAME=root
+      - DRAW_DB_PASSWORD=123456
+      - DRAW_REDIS_HOST=redis
+      - DRAW_REDIS_PASSWORD=123456
+      - DRAW_MAX_PERSON=6
+      - DRAW_SECONDS=60
+      - DRAW_NS=/draw-socket
+      - OSS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+      - OSS_ACCESS_KEY_SECRET=YOUR_SECRET
+    depends_on:
+      - db
+      - redis
+    networks:
+      - network
+
+  frontend:
+    build:
+      context: ./draw-guess-front
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - network
+
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: draw-guess
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d  # 自动执行SQL初始化
+    networks:
+      - network
+
+  redis:
+    image: redis:alpine
+    command: redis-server --requirepass 123456
+    volumes:
+      - redis_data:/data
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge
+
+volumes:
+  redis_data:
