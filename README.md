@@ -65,17 +65,23 @@ draw-guess-java为后端代码、draw-guess-front为前端代码
 
 ##### **前端启动步骤**
 
-1、`pnpm i`
+1.安装node.js
 
-2、`pnpm dev`
+2.`npm install -g pnpm`
+
+3.`pnpm i`
+
+4.`pnpm dev`
 
 ##### **后端启动步骤**
 
-1、使用sql文件创建基础数据
+1.安装并配置好mysql,redis,maven,java21(必选)和navicat(可选)
 
-2、配置好redis以及mysql
+2.创建draw-guess数据库并使用navicat运行sql文件
 
-3、启动
+3.在后端代码根目录运行`mvn clean install`，等待构筑完成
+
+4.找到构筑完成的jar,在cmd输入`java -jar [构筑完的jar文件名字].jar`
 
 #### 项目浏览
 
