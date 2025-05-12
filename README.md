@@ -156,6 +156,9 @@ git clone https://github.com/ifavcode/nihuawocai.git
 - OSS_ACCESS_KEY_SECRET=YOUR_SECRET
 # 启动
 docker compose up -d
+# 你可以查看应用启动情况
+docker compose logs -f
+# 打开http://IP:5173
 ```
 
 使用到的镜像
