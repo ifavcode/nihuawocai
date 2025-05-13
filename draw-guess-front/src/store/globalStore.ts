@@ -13,7 +13,6 @@ import { defineStore } from "pinia";
 import { io, type Socket } from "socket.io-client";
 import Cookies from "js-cookie";
 import { getRoomStatusApi } from "@/api/draw";
-import { pathRewrite } from "@/utils/request";
 
 const host = window.location.host;
 
@@ -30,7 +29,7 @@ export const useGlobalStore = defineStore("global", () => {
       navigator.userAgent
     )
   );
-  const curSear = ref<number | null>(null);
+  const curSeat = ref<number | null>(null);
   const roomStatus = ref<RoomStatus>({
     startGameId: -1,
     round: -1,
@@ -163,7 +162,13 @@ export const useGlobalStore = defineStore("global", () => {
       name: DrawEnum.SEAT_DOWN,
       data: seat,
     });
-    curSear.value = seat;
+    curSeat.value = seat;
+  }
+
+  function standUp() {
+    socket.value?.emit(DrawEnum.STAND_UP, {
+      name: DrawEnum.STAND_UP,
+    })
   }
 
   function startGame(roomName: string) {
@@ -177,7 +182,7 @@ export const useGlobalStore = defineStore("global", () => {
 
   function startGamePerm() {
     // 第一个位置的人 有权限开始游戏
-    return curSear.value != null && curSear.value === 0;
+    return curSeat.value != null && curSeat.value === 0;
   }
 
   function isStart() {
@@ -212,11 +217,12 @@ export const useGlobalStore = defineStore("global", () => {
     drawHistory,
     isMobile,
     seatDown,
-    curSear,
+    curSeat,
     startGamePerm,
     startGame,
     isStart,
     roomStatus,
     nextRound,
+    standUp
   };
 });

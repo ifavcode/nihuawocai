@@ -29,7 +29,8 @@ export enum DrawEnum {
   NEXT_ROUND = "next_round",
   GAME_OVER = "game_over",
   GUESS_CORRECT = "guess_correct",
-  REFRESH_ROOM_STATUS = "refresh_room_status"
+  REFRESH_ROOM_STATUS = "refresh_room_status",
+  STAND_UP = "stand_up"
 }
 
 export interface DrawEvent<T> {

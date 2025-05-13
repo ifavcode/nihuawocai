@@ -4,11 +4,13 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.guetzjb.drawguess.constant.RedisConstant;
 import cn.guetzjb.drawguess.entity.R;
 import cn.guetzjb.drawguess.entity.User;
+import cn.guetzjb.drawguess.entity.dto.UserDTO;
 import cn.guetzjb.drawguess.exception.NotLoginException;
 import cn.guetzjb.drawguess.exception.ServiceException;
 import cn.guetzjb.drawguess.repository.UserRepository;
 import cn.guetzjb.drawguess.service.RedisService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,5 +51,18 @@ public class UserController {
         User user = redisService.getCacheObject(RedisConstant.USER + userId);
         user.setPassword(null);
         return R.ok(user);
+    }
+
+    @GetMapping("/username")
+    public R username(@RequestParam String username) {
+        // 根据用户名查询用户草率的信息
+        User user;
+        if (StringUtils.isEmpty(username)) {
+            user = userRepository.findById(1L).get(); // 保证存在
+        } else {
+            user = userRepository.findByUsername(username);
+        }
+        UserDTO build = UserDTO.builder().id(user.getId()).avatar(user.getAvatar()).nickname(user.getNickname()).build();
+        return R.ok(build);
     }
 }

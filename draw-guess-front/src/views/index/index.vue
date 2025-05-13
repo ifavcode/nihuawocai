@@ -309,6 +309,7 @@ emitter.on('testEvent', () => {
       <div class="w-full h-full absolute top-0 left-0 bg-white" title="等待开始游戏"
         v-if="globalStore.roomStatus.startGameId === -1">
       </div>
+      <room-top-info v-if="globalStore.roomStatus.startGameId === -1" />
       <canvas ref="drawBoardRef" :class="canDraw ? 'cursor-crosshair' : ''" />
       <div class="absolute h-11 bottom-0 left-0 w-full p-2 flex items-center gap-4">
         <span class="iconoir--edit-pencil hover-primary cursor-pointer" title="画笔"></span>
@@ -377,11 +378,13 @@ emitter.on('testEvent', () => {
     <div class="w-full max-w-[680px] p-4">
       <div class="w-full flex flex-col gap-4 ">
         <div v-if="curGame" v-for="item in curGame.gameRoundList" class="">
-          <div class="mb-2 font-semibold text-primary">
-            <p>{{ item.drawTitle?.title }}</p>
-          </div>
-          <div class="bg-white rounded-sm">
-            <img :src="item.imageUrl" alt="">
+          <div v-show="item.imageUrl">
+            <div class="mb-2 font-semibold text-primary">
+              <p>{{ item.drawTitle?.title }}</p>
+            </div>
+            <div class="bg-white rounded-sm">
+              <img :src="item.imageUrl" alt="">
+            </div>
           </div>
         </div>
       </div>

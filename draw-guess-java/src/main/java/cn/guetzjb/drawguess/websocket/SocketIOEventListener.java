@@ -55,6 +55,10 @@ public class SocketIOEventListener {
             webSocketService.seatDown(client, data);
         });
 
+        ns.addEventListener(DrawEnum.STAND_UP.getName(), DrawEvent.class, (client, data, ackRequest) -> {
+            webSocketService.standUp(client, data);
+        });
+
         ns.addEventListener(DrawEnum.START_GAME.getName(), DrawEvent.class, (client, data, ackRequest) -> {
             webSocketService.startGame(client, data);
         });

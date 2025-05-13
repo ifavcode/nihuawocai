@@ -16,21 +16,16 @@ function havePerson() {
   return (onlineUsers.value.in.length + onlineUsers.value.out.length) !== 0
 }
 
-function getRoomNumber() {
-  let cnt = onlineUsers.value.in.reduce((pre, cur) => {
-    pre += cur.user.nickname !== '加入' ? 1 : 0
-    return pre
-  }, 0)
-  cnt += onlineUsers.value.out.length
-  return cnt
-}
-
 function seatDown(roomUserDTO: RoomUserDTO, seat: number) {
   if (!canJoin(roomUserDTO.user)) return
   globalStore.seatDown(seat)
 }
 
-const { onlineUsers } = storeToRefs(globalStore)
+function standUp() {
+  globalStore.standUp()
+}
+
+const { onlineUsers, curSeat } = storeToRefs(globalStore)
 const userRef = ref<HTMLElement[]>([])
 
 function guessCorrect(correctUser: UserDTO) {
@@ -58,7 +53,6 @@ emitter.on('guessCorrect', guessCorrect)
 
 <template>
   <div class="w-full max-w-[680px]">
-    <p v-show="havePerson" class="text-sm mb-2 px-4 text-gray-600">房间共加入{{ getRoomNumber() }}人</p>
     <div class="overflow-x-auto flex gap-4">
       <div v-for="(item, index) in onlineUsers.in" ref="userRef" class="w-16 flex flex-col items-center gap-1 relative"
         @click="seatDown(item, index)"
@@ -76,6 +70,12 @@ emitter.on('guessCorrect', guessCorrect)
           class="absolute top-0 right-0 text-xs text-red-500 font-semibold">
           {{ globalStore.roomStatus.roomUserList[index]?.score || 0 }}
         </div>
+      </div>
+      <div v-if="curSeat != null" class="w-16 flex flex-col items-center gap-1 relative cursor-pointer group" @click="standUp">
+        <div class="size-10 rounded-full bg-gray-200 flex justify-center items-center">
+          <p class="flowbite--merge-cells-outline text-gray-500 group-hover:text-primary"></p>
+        </div>
+        <p class="w-full line-clamp-2 text-sm text-center group-hover:text-primary">离开</p>
       </div>
       <p class="text-sm" v-show="!havePerson">没有用户在线</p>
     </div>

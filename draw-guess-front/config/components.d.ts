@@ -20,6 +20,7 @@ declare module 'vue' {
     OnlineUserBar: typeof import('./../src/components/OnlineUserBar.vue')['default']
     RainbowButton: typeof import('./../src/components/RainbowButton/index.vue')['default']
     RippleButton: typeof import('./../src/components/RippleButton/index.vue')['default']
+    RoomTopInfo: typeof import('./../src/components/RoomTopInfo.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SettlementPopup: typeof import('./../src/views/index/SettlementPopup.vue')['default']

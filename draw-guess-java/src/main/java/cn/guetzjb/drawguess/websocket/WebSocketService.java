@@ -287,6 +287,17 @@ public class WebSocketService {
         getOnlineUsers(client, true);
     }
 
+    public void standUp(SocketIOClient client, DrawEvent<Void> drawEvent) {
+        String room = getRoom(client);
+        List<RoomUser> list = roomMap.getOrDefault(room, new ArrayList<>());
+        for (RoomUser roomUser : list) {
+            if (roomUser.getClient().equals(client)) {
+                roomUser.setPosition(null);
+            }
+        }
+        getOnlineUsers(client, true);
+    }
+
     @Transactional
     public void startGame(SocketIOClient client, DrawEvent<StartGameDTO> data) {
         String room = getRoom(client);
