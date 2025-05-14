@@ -5,6 +5,7 @@ import { useGlobalStore } from '@/store/globalStore';
 import { useUserStore } from '@/store/userStore';
 import { Constant, type GameRound, type UserUnDTO } from '@/types';
 import { autoRegisterAndLogin, formatDateTimeNoYear } from '@/utils';
+import Cookies from 'js-cookie'
 
 const historyRoom = ref<UserUnDTO[]>([])
 const historyTimeMap = ref<Record<string, Date>>({})
@@ -13,14 +14,28 @@ const userStore = useUserStore()
 const globalStore = useGlobalStore()
 const recommendList = ref<GameRound[]>([])
 
-async function autoLogin() {
-  await autoRegisterAndLogin()
-  const { data: res } = await getProfileApi()
-  userStore.user = res.data
+async function autoLogin(cnt: number) {
+  if (cnt > 3) return
+  const token = Cookies.get(Constant.JWT_HEADER_NAME)
+  if (!token) {
+    await autoRegisterAndLogin()
+    const { data: res } = await getProfileApi()
+    userStore.user = res.data
+  } else {
+    try {
+      const { data: res } = await getProfileApi()
+      userStore.user = res.data
+      return true
+    } catch (error) {
+      Cookies.remove(Constant.JWT_HEADER_NAME)
+      autoLogin(cnt + 1)
+      return false
+    }
+  }
 }
 
 async function initHistoryRoom() {
-  await autoLogin()
+  await autoLogin(0)
   const historyRoomStorage = localStorage.getItem(Constant.HISTORY_ROOM)
   if (historyRoomStorage) {
     const historyRoomTmp: Record<string, any>[] = JSON.parse(historyRoomStorage)

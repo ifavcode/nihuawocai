@@ -58,7 +58,7 @@ public class UserController {
     public R username(@RequestParam String username) {
         // 根据用户名查询用户草率的信息
         User user;
-        if (StringUtils.isEmpty(username)) {
+        if (StringUtils.isEmpty(username) || username.equals("public")) {
             user = userRepository.findById(1L).get(); // 保证存在
         } else {
             user = userRepository.findByUsername(username);
@@ -72,7 +72,7 @@ public class UserController {
         Set<UserUnDTO> set = new HashSet<>();
         for (String username : usernames) {
             User user;
-            if (StringUtils.isEmpty(username)) {
+            if (StringUtils.isEmpty(username) || username.equals("public")) {
                 user = userRepository.findById(1L).get();
             } else {
                 user = userRepository.findByUsername(username);

@@ -8,7 +8,7 @@ const router = createRouter({
     {
       path: "/",
       name: "index",
-      redirect: "/index",
+      redirect: "/hall",
       children: [
         {
           path: "/index",
