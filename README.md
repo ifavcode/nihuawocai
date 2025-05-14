@@ -170,9 +170,11 @@ docker compose logs -f
 
 #### 项目浏览
 
+![大厅](https://ifavcode.github.io/images/QQ20250514-172718.png)
+
 ![QQ20250423-174803](https://ifavcode.github.io/images/QQ20250423-174803.png)
 
 ![QQ20250423-174836](https://ifavcode.github.io/images/QQ20250423-174836.png)
 ![QQ20250423-174909](https://ifavcode.github.io/images/QQ20250423-174909.png)
-![等待节目](https://ifavcode.github.io/images/等待节目.png)
+![等待节目](https://ifavcode.github.io/images/QQ20250514-173559.png)
 
