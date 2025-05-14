@@ -169,6 +169,7 @@ export const useGlobalStore = defineStore("global", () => {
     socket.value?.emit(DrawEnum.STAND_UP, {
       name: DrawEnum.STAND_UP,
     })
+    curSeat.value = null
   }
 
   function startGame(roomName: string) {
