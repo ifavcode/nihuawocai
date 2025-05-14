@@ -30,6 +30,10 @@ function formatDateTime(date: Date) {
   return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 }
 
+function formatDateTimeNoYear(date: Date) {
+  return dayjs(date).format("MM-DD HH:mm");
+}
+
 async function autoRegisterAndLogin() {
   const user: User = {
     username: nanoid(8),
@@ -43,4 +47,4 @@ async function autoRegisterAndLogin() {
   }
 }
 
-export { emitter, formatDateTime, formatDate, cn, autoRegisterAndLogin };
+export { emitter, formatDateTime, formatDate, cn, autoRegisterAndLogin, formatDateTimeNoYear };

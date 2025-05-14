@@ -12,15 +12,33 @@ const router = createRouter({
       children: [
         {
           path: "/index",
+          name: 'room',
           component: IndexView,
+        },
+        {
+          name: 'hall',
+          path: "/hall",
+          component: () => import('@/views/hall/index.vue'),
+          meta: {
+            title: '你画我猜'
+          }
         },
         {
           path: "/test",
           component: TestPage,
+          meta: {
+            title: '测试页'
+          }
         },
       ],
     },
   ],
 });
+
+router.beforeEach((to) => {
+  if (to.meta.title) {
+    document.title = to.meta.title as string
+  }
+})
 
 export default router;

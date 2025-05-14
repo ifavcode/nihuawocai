@@ -14,6 +14,7 @@ declare module 'vue' {
     AModal: typeof import('ant-design-vue/es')['Modal']
     APopconfirm: typeof import('ant-design-vue/es')['Popconfirm']
     AStatisticCountdown: typeof import('ant-design-vue/es')['StatisticCountdown']
+    Hall: typeof import('./../src/views/hall/index.vue')['default']
     IInput: typeof import('./../src/components/IInput/index.vue')['default']
     Index: typeof import('./../src/views/index/index.vue')['default']
     MessageBox: typeof import('./../src/views/index/MessageBox.vue')['default']

@@ -17,6 +17,7 @@
     "axios": "^1.8.4",
     "canvas-confetti": "^1.9.3",
     "clsx": "^2.1.1",
+    "copy-to-clipboard": "^3.3.3",
     "dayjs": "^1.11.13",
     "js-cookie": "^3.0.5",
     "mitt": "^3.0.1",

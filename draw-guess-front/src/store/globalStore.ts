@@ -207,8 +207,13 @@ export const useGlobalStore = defineStore("global", () => {
     });
   }
 
+  function leaveRoom(){
+    socket.value?.close()
+  }
+
   return {
     init,
+    leaveRoom,
     socket,
     getOnlineUsers,
     onlineUsers,

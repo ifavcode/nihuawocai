@@ -118,8 +118,11 @@ oss:
 设置oss环境变量**（若不保存可跳过）**
 
 ```sh
-set OSS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
-set OSS_ACCESS_KEY_SECRET=YOUR_SECRET
+Linux/macOS:
+将 export OSS_ACCESS_KEY_ID=your-key 添加到 ~/.bashrc 或 ~/.zshrc。
+将 export OSS_ACCESS_KEY_SECRET=your-secret 添加到 ~/.bashrc 或 ~/.zshrc。
+Windows: 
+通过系统属性 → 高级 → 环境变量添加。
 ```
 
 application-dev.yml示例配置如下

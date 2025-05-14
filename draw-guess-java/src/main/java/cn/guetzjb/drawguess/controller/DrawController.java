@@ -4,6 +4,7 @@ import cn.guetzjb.drawguess.entity.DrawTitle;
 import cn.guetzjb.drawguess.entity.R;
 import cn.guetzjb.drawguess.entity.RoomStatus;
 import cn.guetzjb.drawguess.entity.StartGame;
+import cn.guetzjb.drawguess.repository.GameRoundRepository;
 import cn.guetzjb.drawguess.repository.StartGameRepository;
 import cn.guetzjb.drawguess.service.DrawService;
 import cn.guetzjb.drawguess.service.RedisService;
@@ -23,6 +24,7 @@ public class DrawController {
     private final RedisService redisService;
     private final DrawService drawService;
     private final StartGameRepository startGameRepository;
+    private final GameRoundRepository gameRoundRepository;
 
     @GetMapping("/room/status")
     public R roomStatus(@RequestParam String room) {
@@ -42,5 +44,10 @@ public class DrawController {
             startGame.getGameRoundList().sort((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()));
         }
         return R.ok(startGame);
+    }
+
+    @GetMapping("/recommend")
+    public R recommend() {
+        return R.ok(gameRoundRepository.findTop12ByImageUrlNotNullOrderByIdDesc());
     }
 }

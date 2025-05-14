@@ -1,4 +1,4 @@
-import type { R, RoomStatus, StartGame } from "@/types";
+import type { GameRound, R, RoomStatus, StartGame } from "@/types";
 import client from "@/utils/request";
 import type { AxiosResponse } from "axios";
 
@@ -30,6 +30,15 @@ export function getRoomLastRecordApi(
   room: string
 ): Promise<AxiosResponse<R<StartGame>>> {
   return client.get("/draw/room/lastRecord?room=" + room, {
+    headers: {
+      isToken: true,
+    },
+  });
+}
+
+export function getDrawRecommendApi(
+): Promise<AxiosResponse<R<GameRound[]>>> {
+  return client.get("/draw/recommend", {
     headers: {
       isToken: true,
     },

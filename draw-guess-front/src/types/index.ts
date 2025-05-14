@@ -1,6 +1,6 @@
 export enum Constant {
   JWT_HEADER_NAME = "drawauth",
-  DRAW_SECONDS = 60,
+  HISTORY_ROOM = "historyRoom"
 }
 
 export interface R<T> {
@@ -41,6 +41,13 @@ export interface DrawEvent<T> {
 export interface UserDTO {
   id: number;
   nickname: string;
+  avatar: string;
+}
+
+export interface UserUnDTO {
+  id: number;
+  nickname: string;
+  username: string;
   avatar: string;
 }
 

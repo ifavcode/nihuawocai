@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { useGlobalStore } from '@/store/globalStore'
-import { DrawEnum, type DrawHistory, type RoomStatus, type RoomUserDTO, type StartGame } from '@/types'
+import { Constant, DrawEnum, type DrawHistory, type RoomStatus, type RoomUserDTO, type StartGame } from '@/types'
 import { nanoid } from 'nanoid'
 import type MessageBox from './MessageBox.vue'
 import { storeToRefs } from 'pinia'
-import { emitter } from '@/utils'
+import { autoRegisterAndLogin, emitter } from '@/utils'
 import { useUserStore } from '@/store/userStore'
 import { getRoomLastRecordApi, saveDrawApi } from '@/api/draw'
 import { Modal } from 'ant-design-vue'
+import Cookies from 'js-cookie'
+import { getProfileApi } from '@/api/user'
 
 const route = useRoute()
+const router = useRouter()
 const roomName = route.query.roomName ? route.query.roomName as string : 'public'
 const drawBoardRef = ref<HTMLCanvasElement>()
 const drawBoardWrap = ref<HTMLElement>()
@@ -64,6 +67,38 @@ globalStore.$subscribe(() => {
     });
   }
 });
+
+async function init(tryCount: number) {
+  if (tryCount > 3) {
+    return
+  }
+  const token = Cookies.get(Constant.JWT_HEADER_NAME)
+  if (!token) {
+    // 没注册前往大厅自动注册
+    router.push({
+      name: 'hall'
+    })
+  } else {
+    const ok = await getProfile()
+    if (!ok) {
+      init(tryCount + 1)
+      return
+    }
+    await nextTick()
+    globalStore.init(roomName)
+  }
+}
+
+async function getProfile() {
+  try {
+    const { data: res } = await getProfileApi()
+    userStore.user = res.data
+    return true
+  } catch (error) {
+    Cookies.remove(Constant.JWT_HEADER_NAME)
+    return false
+  }
+}
 
 function startDraw() {
   if (drawBoardRef.value) {
@@ -283,23 +318,51 @@ function gameOver(roomStatus: RoomStatus) {
   });
 }
 
+function saveRoomName() {
+  let historyRoomStorage = localStorage.getItem(Constant.HISTORY_ROOM) || ''
+  const historyRoomStorageTmp: Record<string, any>[] = JSON.parse(historyRoomStorage || '[]')
+  if (!historyRoomStorageTmp.find(v => v.roomName === roomName)) {
+    historyRoomStorageTmp.push({
+      roomName,
+      time: new Date()
+    })
+  }
+  localStorage.setItem(Constant.HISTORY_ROOM, JSON.stringify(historyRoomStorageTmp))
+}
+
+function download(url: string) {
+  window.open(url)
+}
+
 onMounted(() => {
+  init(0)
   startDraw()
   getRoomLastRecord()
+  saveRoomName()
+
+  emitter.on('refreshCanvas', () => {
+    refreshCanvasFunc()
+  })
+  emitter.on('refreshCanvasImage', () => {
+    getRoomLastRecord()
+  })
+  emitter.on('gameOver', (roomStatus) => {
+    gameOver(roomStatus)
+  })
+  emitter.on('testEvent', () => {
+    console.log('建立testEvent成功');
+  })
+
+  document.title = roomName + '的房间（你画我猜）'
 })
 
-emitter.on('refreshCanvas', () => {
-  refreshCanvasFunc()
+onBeforeMount(() => {
+  emitter.off('refreshCanvas')
+  emitter.off('refreshCanvasImage')
+  emitter.off('gameOver')
+  emitter.off('testEvent')
 })
-emitter.on('refreshCanvasImage', () => {
-  getRoomLastRecord()
-})
-emitter.on('gameOver', (roomStatus) => {
-  gameOver(roomStatus)
-})
-emitter.on('testEvent', () => {
-  console.log('建立testEvent成功');
-})
+
 
 </script>
 
@@ -342,7 +405,7 @@ emitter.on('testEvent', () => {
       <div class="absolute left-[50%] translate-x-[-50%] bottom-16" v-if="globalStore.roomStatus.startGameId === -1">
         <!-- <shimmer-button shimmerColor="#fff" background="#000" shimmerSize="0.2rem">开始游戏</shimmer-button> -->
         <rainbow-button class="text-white" v-if="globalStore.startGamePerm()" @click="startGame">开始游戏</rainbow-button>
-        <rainbow-button class="text-white cursor-not-allowed" v-else>等待首座玩家开始游戏</rainbow-button>
+        <rainbow-button class="text-white cursor-not-allowed" v-else>等待首座玩家开始</rainbow-button>
       </div>
       <div class="absolute top-4 right-4 pointer-events-none" v-if="globalStore.roomStatus.startGameId !== -1">
         <a-statistic-countdown :value="globalStore.roomStatus.seconds" @finish="drawRoundEnd" format="ss秒"
@@ -382,8 +445,8 @@ emitter.on('testEvent', () => {
             <div class="mb-2 font-semibold text-primary">
               <p>{{ item.drawTitle?.title }}</p>
             </div>
-            <div class="bg-white rounded-sm">
-              <img :src="item.imageUrl" alt="">
+            <div class="rounded-sm bg-white size-[300px] cursor-pointer" @click="download(item.imageUrl)">
+              <img class="w-full h-full" :src="item.imageUrl" alt="">
             </div>
           </div>
         </div>

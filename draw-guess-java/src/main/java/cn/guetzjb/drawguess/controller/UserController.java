@@ -5,6 +5,7 @@ import cn.guetzjb.drawguess.constant.RedisConstant;
 import cn.guetzjb.drawguess.entity.R;
 import cn.guetzjb.drawguess.entity.User;
 import cn.guetzjb.drawguess.entity.dto.UserDTO;
+import cn.guetzjb.drawguess.entity.dto.UserUnDTO;
 import cn.guetzjb.drawguess.exception.NotLoginException;
 import cn.guetzjb.drawguess.exception.ServiceException;
 import cn.guetzjb.drawguess.repository.UserRepository;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -62,7 +63,23 @@ public class UserController {
         } else {
             user = userRepository.findByUsername(username);
         }
-        UserDTO build = UserDTO.builder().id(user.getId()).avatar(user.getAvatar()).nickname(user.getNickname()).build();
+        UserUnDTO build = UserUnDTO.builder().id(user.getId()).avatar(user.getAvatar()).nickname(user.getNickname()).username(username).build();
         return R.ok(build);
+    }
+
+    @GetMapping("/usernameBatch")
+    public R usernameBatch(@RequestParam List<String> usernames) {
+        Set<UserUnDTO> set = new HashSet<>();
+        for (String username : usernames) {
+            User user;
+            if (StringUtils.isEmpty(username)) {
+                user = userRepository.findById(1L).get();
+            } else {
+                user = userRepository.findByUsername(username);
+            }
+            UserUnDTO build = UserUnDTO.builder().id(user.getId()).avatar(user.getAvatar()).nickname(user.getNickname()).username(username).build();
+            set.add(build);
+        }
+        return R.ok(set);
     }
 }

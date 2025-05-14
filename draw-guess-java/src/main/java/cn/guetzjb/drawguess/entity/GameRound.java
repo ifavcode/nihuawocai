@@ -37,7 +37,7 @@ public class GameRound {
 
     @ManyToOne
     @JoinColumn()
-    @JsonIgnoreProperties({"gameRoundList", "startGameList"})
+    @JsonIgnoreProperties({"gameRoundList", "startGameList", "password"})
     private User user;
 
     private Date createTime;

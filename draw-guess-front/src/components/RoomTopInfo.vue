@@ -3,6 +3,7 @@ import { getRoomUserInfoApi } from '@/api/user';
 import { useGlobalStore } from '@/store/globalStore';
 import type { UserDTO } from '@/types';
 import { storeToRefs } from 'pinia';
+import copy from 'copy-to-clipboard'
 
 
 const route = useRoute()
@@ -12,6 +13,7 @@ const loading = ref(false)
 
 const globalStore = useGlobalStore()
 const { onlineUsers } = storeToRefs(globalStore)
+const router = useRouter()
 
 function getRoomNumber() {
   let cnt = onlineUsers.value.in.reduce((pre, cur) => {
@@ -36,6 +38,18 @@ async function getRoomUserInfo() {
   }
 }
 
+function backHall() {
+  globalStore.leaveRoom()
+  router.push({
+    name: 'hall'
+  })
+}
+
+async function copyUrl() {
+  copy(window.location.href)
+  window.$message.success('房间地址已复制到剪贴板')
+}
+
 getRoomUserInfo()
 
 </script>
@@ -50,7 +64,12 @@ getRoomUserInfo()
       </div>
       <div v-else class="flex justify-between">
         <div>
-          <p class="text-white font-semibold text-lg">{{ roomUser.nickname }}的房间</p>
+          <div class="flex gap-1 items-center">
+            <i class="material-symbols--keyboard-backspace-rounded text-white hover:text-primary cursor-pointer"
+              @click="backHall"></i>
+            <p class="text-white font-semibold text-lg">{{ roomUser.nickname }}的房间</p>
+            <i class="fluent--share-16-regular text-white hover:text-primary cursor-pointer" @click="copyUrl"></i>
+          </div>
           <p class="text-white text-sm">
             <span class="">{{ getRoomNumber() }}</span>
             人在线

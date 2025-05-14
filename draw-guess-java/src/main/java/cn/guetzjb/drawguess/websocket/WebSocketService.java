@@ -344,10 +344,11 @@ public class WebSocketService {
         RoomStatus roomStatus = drawService.getRoomStatus(room);
         boolean isTest = roomStatus.getDrawTitle().getId() == -1;
         gameRound.setDrawTitle(roomStatus.getDrawTitle());
-        if (roomStatus == null || roomStatus.getRound() + 1 >= roomStatus.getRoomUserList().size()) {
+        if (roomStatus.getRound() + 1 >= roomStatus.getRoomUserList().size()) {
             if (!isTest) {
                 gameRoundRepository.save(gameRound);
             }
+            redisService.deleteObject(String.format(RedisConstant.GAME_ROUND, room));
             client.getNamespace().getRoomOperations(room).sendEvent(DrawEnum.GAME_OVER.getName());
         } else {
             gameRound.setDrawTitle(roomStatus.getDrawTitle());

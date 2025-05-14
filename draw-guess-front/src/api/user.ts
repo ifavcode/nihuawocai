@@ -1,4 +1,4 @@
-import type { R, User, UserDTO } from "@/types";
+import type { R, User, UserDTO, UserUnDTO } from "@/types";
 import client from "@/utils/request";
 import type { AxiosResponse } from "axios";
 
@@ -18,10 +18,19 @@ export function getProfileApi(): Promise<AxiosResponse<R<User>>> {
   });
 }
 
-export function getRoomUserInfoApi(username: string): Promise<AxiosResponse<R<UserDTO>>> {
+export function getRoomUserInfoApi(username: string): Promise<AxiosResponse<R<UserUnDTO>>> {
   return client.get("/user/username?username=" + username, {
     headers: {
       isToken: true,
     },
   });
 }
+
+export function getRoomUserInfoBatchApi(usernames: string[]): Promise<AxiosResponse<R<UserUnDTO[]>>> {
+  return client.get("/user/usernameBatch?usernames=" + usernames.join(','), {
+    headers: {
+      isToken: true,
+    },
+  });
+}
+
