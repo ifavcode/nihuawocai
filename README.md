@@ -2,6 +2,8 @@
 
 ## 基于Spring+Vue开发的你画我猜Web小游戏
 
+线上体验暂停，请部署到本地体验哦~
+
 > 项目地址 https://github.com/ifavcode/nihuawocai
 
 本项目是一款基于Web的实时互动绘画游戏平台，采用前后端分离架构开发。通过Spring Boot构建高性能后端服务，结合Vue3实现响应式前端界面，使用Socket.IO实现实时通信。支持多房间游戏、实时画板同步、聊天互动、等功能。
