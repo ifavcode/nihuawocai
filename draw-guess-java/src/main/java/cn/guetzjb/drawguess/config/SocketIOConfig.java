@@ -25,8 +25,13 @@ public class SocketIOConfig {
 //        config.setAllowHeaders(tokenName);
         config.setJsonSupport(new JacksonJsonSupport());
         config.setExceptionListener(new DefaultExceptionListener());
-        config.setHttpCompression(false);
-        config.setWebsocketCompression(false);
+        // 开启压缩，减少画画数据传输量
+        config.setHttpCompression(true);
+        config.setWebsocketCompression(true);
+        // 调整 Netty 线程池，提升并发处理能力
+        int cpuCores = Runtime.getRuntime().availableProcessors();
+        config.setBossThreads(1);
+        config.setWorkerThreads(cpuCores * 2);
 //        config.setKeyStore(getCertJks());
 //        config.setKeyStorePassword("zfs2k32p");
         return new SocketIOServer(config);

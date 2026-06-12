@@ -4,6 +4,7 @@ import com.aliyun.oss.ClientBuilderConfiguration;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSClientBuilder;
+import com.aliyun.oss.common.auth.Credentials;
 import com.aliyun.oss.common.auth.CredentialsProviderFactory;
 import com.aliyun.oss.common.auth.EnvironmentVariableCredentialsProvider;
 import com.aliyun.oss.common.comm.SignVersion;
@@ -61,6 +62,9 @@ public class AppConfig {
     @Bean
     public OSS ossClient() throws ClientException {
         EnvironmentVariableCredentialsProvider credentialsProvider = CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
+        Credentials credentials = credentialsProvider.getCredentials();
+        System.out.println("OSS AccessKey:" + credentials.getAccessKeyId());
+        System.out.println("OSS Secret:" + credentials.getSecretAccessKey());
         ClientBuilderConfiguration clientBuilderConfiguration = new ClientBuilderConfiguration();
         clientBuilderConfiguration.setSignatureVersion(SignVersion.V4);
         return OSSClientBuilder.create()

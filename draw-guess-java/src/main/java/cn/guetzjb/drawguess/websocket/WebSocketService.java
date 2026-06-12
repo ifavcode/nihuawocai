@@ -21,7 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+
+import org.springframework.scheduling.annotation.Async;
 
 @Service
 @Slf4j
@@ -59,7 +62,7 @@ public class WebSocketService {
         User profile = userService.getProfile(userId, true);
         UserDTO user = new UserDTO(userId, profile.getNickname(), profile.getAvatar());
         userMap.put(client, user);
-        roomMap.computeIfAbsent(room, k -> new ArrayList<>()).add(new RoomUser(client, null, user, 0));
+        roomMap.computeIfAbsent(room, k -> new CopyOnWriteArrayList<>()).add(new RoomUser(client, null, user, 0));
         client.joinRoom(room);
         RoomStatus roomStatus = drawService.getRoomStatus(room);
         if (roomStatus != null && roomStatus.getStartGameId() != -1L) {
@@ -262,8 +265,14 @@ public class WebSocketService {
         return false;
     }
 
+    /**
+     * 广播画笔数据到房间其他成员。
+     * 使用异步线程池执行，避免 JSON 序列化阻塞 Netty 事件循环线程。
+     */
+    @Async("broadcastExecutor")
     public void draw(SocketIOClient client, DrawEvent<List<DrawHistory>> drawEvent) {
-        for (SocketIOClient socketIOClient : client.getNamespace().getRoomOperations(getRoom(client)).getClients()) {
+        String room = getRoom(client);
+        for (SocketIOClient socketIOClient : client.getNamespace().getRoomOperations(room).getClients()) {
             if (socketIOClient != client) {
                 socketIOClient.sendEvent(DrawEnum.DRAW.getName(), drawEvent);
             }

@@ -8,4 +8,4 @@ draw:
     password: 123456
   redis:
     host: 127.0.0.1
-    password: 123456
+#    password: 123456
