@@ -2,7 +2,7 @@
 
 ## 基于Spring+Vue开发的你画我猜Web小游戏
 
-线上体验暂停，请部署到本地体验哦~
+可以线上体验完整功能哦
 
 > 项目地址 https://github.com/ifavcode/nihuawocai
 
