@@ -79,7 +79,7 @@ emitter.on('guessCorrect', guessCorrect)
       </div>
       <p class="text-sm" v-show="!havePerson">没有用户在线</p>
     </div>
-    <div v-show="havePerson">
+    <div v-show="onlineUsers.out.length > 0">
       <p class="text-sm mb-2 px-4 text-gray-600 mt-4">等待入座</p>
       <div class="flex gap-4">
         <div v-for="(item) in onlineUsers.out" class="w-16 flex flex-col items-center gap-1 relative">

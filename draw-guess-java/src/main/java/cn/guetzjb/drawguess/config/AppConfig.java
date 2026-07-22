@@ -15,6 +15,10 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
 @Getter
@@ -73,6 +77,17 @@ public class AppConfig {
                 .clientConfiguration(clientBuilderConfiguration)
                 .region(REGION)
                 .build();
+    }
+
+    @Bean
+    public TaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+        taskScheduler.setPoolSize(Runtime.getRuntime().availableProcessors());
+        taskScheduler.setThreadNamePrefix("schedule-task-");
+        taskScheduler.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        taskScheduler.setWaitForTasksToCompleteOnShutdown(true);
+        taskScheduler.setAwaitTerminationSeconds(drawSeconds + 10);
+        return taskScheduler;
     }
 
 }

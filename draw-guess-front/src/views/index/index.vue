@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { useGlobalStore } from '@/store/globalStore'
-import { Constant, DrawEnum, type DrawHistory, type RoomStatus, type RoomUserDTO, type StartGame } from '@/types'
+import { Constant, type RoomStatus, type RoomUserDTO, type StartGame } from '@/types'
 import { nanoid } from 'nanoid'
 import type MessageBox from './MessageBox.vue'
 import { storeToRefs } from 'pinia'
-import { autoRegisterAndLogin, emitter } from '@/utils'
+import { emitter } from '@/utils'
 import { useUserStore } from '@/store/userStore'
-import { getRoomLastRecordApi, saveDrawApi } from '@/api/draw'
+import { getRoomLastRecordApi, saveDrawApi, saveGameRoundByStartGameApi } from '@/api/draw'
 import { Modal } from 'ant-design-vue'
 import Cookies from 'js-cookie'
 import { getProfileApi } from '@/api/user'
 
 const route = useRoute()
 const router = useRouter()
-const roomName = route.query.roomName ? route.query.roomName as string : 'public'
+const roomName = route.query.roomName ? route.query.roomName as string : 'public' //此处实际的是username，非实际房间名称
 const drawBoardRef = ref<HTMLCanvasElement>()
 const drawBoardWrap = ref<HTMLElement>()
 const globalStore = useGlobalStore()
@@ -206,6 +206,9 @@ function chooseEraser() {
 }
 
 function clearDraw() {
+  if (!canDraw.value) {
+    return
+  }
   if (drawBoardRef.value) {
     const ctx: CanvasRenderingContext2D = drawBoardRef.value.getContext('2d') as CanvasRenderingContext2D
     ctx.clearRect(0, 0, drawBoardRef.value.width, drawBoardRef.value.height)
@@ -281,11 +284,20 @@ function startGame() {
 }
 
 async function drawRoundEnd() {
-  // 只需要画画者调用
+  // 只需要画画者调用 - 提前结束
   if (canDraw.value) {
     const base64 = drawBoardRef.value?.toDataURL('image/png')
-    const imageUrl = await saveDraw(base64 as string)
-    globalStore.nextRound(imageUrl)
+    const gameRound = globalStore.nextRound()
+    setTimeout(() => {
+      saveDraw(base64 as string).then((url: string) => {
+        saveGameRoundByStartGameApi({
+          startGameId: gameRound.startGameId,
+          imageUrl: url,
+        }).then(() => {
+          globalStore.sendAllRefreshCanvasImage()
+        })
+      })
+    }, 2000);
   }
 }
 
@@ -350,10 +362,8 @@ onMounted(() => {
     gameOver(roomStatus)
   })
   emitter.on('testEvent', () => {
-    console.log('建立testEvent成功');
+    // console.log('建立testEvent成功');
   })
-
-  document.title = roomName + '的房间（你画我猜）'
 })
 
 onBeforeMount(() => {

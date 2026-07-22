@@ -2,15 +2,13 @@ package cn.guetzjb.drawguess.entity;
 
 import cn.guetzjb.drawguess.entity.dto.UserDTO;
 import com.corundumstudio.socketio.SocketIOClient;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class RoomUser {
 
     private SocketIOClient client;

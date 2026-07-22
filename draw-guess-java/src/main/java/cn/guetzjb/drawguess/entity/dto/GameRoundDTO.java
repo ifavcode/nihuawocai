@@ -13,6 +13,5 @@ public class GameRoundDTO {
     private Integer round;
     private Integer seat;
     private Long startGameId;
-    private String imageUrl;
 
 }

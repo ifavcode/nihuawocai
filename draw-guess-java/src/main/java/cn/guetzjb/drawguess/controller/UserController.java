@@ -77,6 +77,9 @@ public class UserController {
             } else {
                 user = userRepository.findByUsername(username);
             }
+            if (user == null) {
+                continue;
+            }
             UserUnDTO build = UserUnDTO.builder().id(user.getId()).avatar(user.getAvatar()).nickname(user.getNickname()).username(username).build();
             set.add(build);
         }

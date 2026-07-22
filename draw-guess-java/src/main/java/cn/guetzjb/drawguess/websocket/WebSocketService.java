@@ -13,15 +13,20 @@ import cn.guetzjb.drawguess.service.RedisService;
 import cn.guetzjb.drawguess.service.UserService;
 import cn.guetzjb.drawguess.utils.SecurityUtils;
 import com.corundumstudio.socketio.SocketIOClient;
+import com.corundumstudio.socketio.SocketIOServer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.scheduling.annotation.Async;
@@ -39,12 +44,15 @@ public class WebSocketService {
     private Integer drawSeconds;
 
     private final static Map<SocketIOClient, UserDTO> userMap = new ConcurrentHashMap<>();
-    private final static Map<String, List<RoomUser>> roomMap = new ConcurrentHashMap<>();
+    public final static Map<String, List<RoomUser>> roomMap = new ConcurrentHashMap<>();
+    private final static Map<Long, ScheduledFuture> scheuledMap = new ConcurrentHashMap<>();
     private final UserService userService;
     private final RedisService redisService;
     private final StartGameRepository startGameRepository;
     private final GameRoundRepository gameRoundRepository;
     private final DrawService drawService;
+    private final TaskScheduler taskScheduler;
+    private final SocketIOServer socketIOServer;
 
     public void connect(SocketIOClient client) {
         String room = getRoom(client);
@@ -97,6 +105,9 @@ public class WebSocketService {
             List<RoomUser> users = roomMap.get(room);
             if (users != null) {
                 users.removeIf(roomUser -> roomUser.getUser().getId().equals(userId));
+                if (users.isEmpty()) {
+                    roomMap.remove(room);
+                }
             }
         }
         client.leaveRoom(room);
@@ -186,6 +197,7 @@ public class WebSocketService {
                     if (correctUserIdSet.size() >= roomStatus.getRoomUserList().size() - 1) {
                         // 除去画画者，全部人都猜对
                         expire = 5;// 5s后下一轮
+                        redisService.deleteObject(key); //清除猜对的人
                     }
                     roomStatus.setSeconds(expire);
                     // 用户猜对，发送房间最新状态
@@ -330,27 +342,45 @@ public class WebSocketService {
         redisService.setCacheObject(String.format(RedisConstant.GAME_ROUND, room), roomStatus, (long) drawSeconds + 10, TimeUnit.SECONDS); // 多十秒缓冲
         // 生成唯一游戏ID，并告知房间内用户
         client.getNamespace().getRoomOperations(room).sendEvent(DrawEnum.START_GAME.getName(), roomStatus);
+
+        // 定时开启下一轮（最晚）
+        ScheduledFuture<?> schedule = taskScheduler.schedule(() -> {
+            nextRound(GameRoundDTO.builder().round(0).seat(0).startGameId(startGame.getId()).build());
+        }, Instant.now().plusSeconds(drawSeconds));
+        scheuledMap.put(startGame.getId(), schedule);
     }
 
-    public void nextRound(SocketIOClient client, GameRoundDTO dto) {
-        // 谁画完了谁来调用下一轮
-        String room = getRoom(client);
-        Object cacheObject = redisService.getCacheObject(String.format(RedisConstant.GAME_ROUND, room));
-        if (cacheObject == null) {
-            client.getNamespace().getRoomOperations(room).sendEvent(DrawEnum.GAME_OVER.getName());
+    public void nextRound(GameRoundDTO dto) {
+        // 时间结束后，由系统调用开启下一轮或者手动开启下一轮
+        if (scheuledMap.containsKey(dto.getStartGameId())) {
+            ScheduledFuture scheduledFuture = scheuledMap.get(dto.getStartGameId());
+            if (scheduledFuture != null) {
+                scheduledFuture.cancel(false);
+                scheuledMap.remove(dto.getStartGameId());
+            }
+        }
+        StartGame startGame = startGameRepository.findById(dto.getStartGameId()).orElse(null);
+        if (startGame == null) {
             return;
         }
+        String room = startGame.getRoomName();
+        Object cacheObject = redisService.getCacheObject(String.format(RedisConstant.GAME_ROUND, room));
+        if (cacheObject == null) {
+            socketIOServer.getNamespace(AppConfig.NAMESPACE).getRoomOperations(room).sendEvent(DrawEnum.GAME_OVER.getName());
+            return;
+        }
+        RoomStatus roomStatus = drawService.getRoomStatus(room);
         // 保存当前轮数据
         GameRound gameRound = new GameRound();
         gameRound.setRound(dto.getRound());
         gameRound.setSeat(dto.getSeat());
-        gameRound.setStartGame(startGameRepository.findById(dto.getStartGameId()).orElse(null));
-        Long userId = SecurityUtils.getUserIdWs(client);
-        User user = userService.getProfile(userId, true);
-        gameRound.setUser(user);
-        gameRound.setImageUrl(dto.getImageUrl());
+        gameRound.setStartGame(startGame);
+        RoomUserDTO roomUserDTO = roomStatus.getRoomUserList().get(dto.getRound());
+        gameRound.setUser(
+                User.builder().id(roomUserDTO.getUser().getId()).build()
+        );
+        gameRound.setImageUrl(""); // 留空，异步存储
         gameRound.setCreateTime(new Date());
-        RoomStatus roomStatus = drawService.getRoomStatus(room);
         boolean isTest = roomStatus.getDrawTitle().getId() == -1;
         gameRound.setDrawTitle(roomStatus.getDrawTitle());
         if (roomStatus.getRound() + 1 >= roomStatus.getRoomUserList().size()) {
@@ -358,7 +388,7 @@ public class WebSocketService {
                 gameRoundRepository.save(gameRound);
             }
             redisService.deleteObject(String.format(RedisConstant.GAME_ROUND, room));
-            client.getNamespace().getRoomOperations(room).sendEvent(DrawEnum.GAME_OVER.getName());
+            socketIOServer.getNamespace(AppConfig.NAMESPACE).getRoomOperations(room).sendEvent(DrawEnum.GAME_OVER.getName());
         } else {
             gameRound.setDrawTitle(roomStatus.getDrawTitle());
             if (!isTest) {
@@ -368,7 +398,19 @@ public class WebSocketService {
             roomStatus.setSeconds(Long.valueOf(drawSeconds));
             roomStatus.setDrawTitle(drawService.generateRandomDrawTitle());
             redisService.setCacheObject(String.format(RedisConstant.GAME_ROUND, room), roomStatus, (long) drawSeconds + 10, TimeUnit.SECONDS);
-            client.getNamespace().getRoomOperations(room).sendEvent(DrawEnum.NEXT_ROUND.getName(), roomStatus);
+            socketIOServer.getNamespace(AppConfig.NAMESPACE).getRoomOperations(room).sendEvent(DrawEnum.NEXT_ROUND.getName(), roomStatus);
+
+            dto.setRound(dto.getRound() + 1);
+            dto.setSeat(roomStatus.getRoomUserList().get(dto.getRound()).getPosition());
+            ScheduledFuture<?> schedule = taskScheduler.schedule(() -> {
+                nextRound(dto);
+            }, Instant.now().plusSeconds(drawSeconds));
+            scheuledMap.put(startGame.getId(), schedule);
         }
+    }
+
+    public void refreshCanvasImage(SocketIOClient client) {
+        String room = getRoom(client);
+        client.getNamespace().getRoomOperations(room).sendEvent(DrawEnum.REFRESH_CANVAS_IMAGE.getName());
     }
 }

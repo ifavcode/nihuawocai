@@ -13,6 +13,7 @@ import { defineStore } from "pinia";
 import { io, type Socket } from "socket.io-client";
 import Cookies from "js-cookie";
 import { getRoomStatusApi } from "@/api/draw";
+import { useUserStore } from "./userStore";
 
 const host = window.location.host;
 
@@ -65,8 +66,8 @@ export const useGlobalStore = defineStore("global", () => {
     );
 
     socket.value.on("connect", () => {
-      console.log("Socket.IO连接已建立");
-      console.log("尝试发送testEvent");
+      console.log("已连接到服务器");
+      // console.log("尝试发送testEvent");
       emitter.emit("testEvent");
       setTimeout(() => {
         emitter.emit("testEvent");
@@ -74,7 +75,48 @@ export const useGlobalStore = defineStore("global", () => {
     });
 
     socket.value.on(DrawEnum.GET_ONLINE_USERS, (data) => {
-      onlineUsers.value = data as RoomUserInOut;
+      if (roomStatus.value.startGameId === -1) {
+        onlineUsers.value = data as RoomUserInOut;
+        onlineUsers.value.in.map(v => {
+          v.online = true
+          return v
+        })
+        onlineUsers.value.out.map(v => {
+          v.online = true
+          return v
+        })
+      } else {
+        if (onlineUsers.value.in.length === 0) {
+          const onlineUsersInStr = localStorage.getItem('onlineUsersIn')
+          if (onlineUsersInStr) {
+            onlineUsers.value.in = JSON.parse(onlineUsersInStr)
+            const find = onlineUsers.value.in.find(v => v.user.id === useUserStore().user.id)
+            if (find) {
+              curSeat.value = find.position
+            }
+          }
+        }
+        if (onlineUsers.value.out.length === 0) {
+          const onlineUsersOutStr = localStorage.getItem('onlineUsersOut')
+          if (onlineUsersOutStr) {
+            onlineUsers.value.out = JSON.parse(onlineUsersOutStr)
+          }
+        }
+        const onlineIn = (data as RoomUserInOut).in.map(v => {
+          return v.user.id
+        })
+        const onlineOut = (data as RoomUserInOut).out.map(v => {
+          return v.user.id
+        })
+        onlineUsers.value.in.map(v => {
+          v.online = onlineIn.includes(v.user.id)
+          return v
+        })
+        onlineUsers.value.out.map(v => {
+          v.online = onlineOut.includes(v.user.id)
+          return v
+        })
+      }
     });
 
     socket.value.on(DrawEnum.TALK_EVERYONE, (data) => {
@@ -83,7 +125,6 @@ export const useGlobalStore = defineStore("global", () => {
 
     socket.value.on(DrawEnum.DRAW, (data) => {
       drawHistory.value = data.data as DrawHistory[];
-      console.log("refreshCanvas");
       emitter.emit("refreshCanvas");
     });
 
@@ -92,6 +133,9 @@ export const useGlobalStore = defineStore("global", () => {
       if (roomStatus.value.startGameId !== -1) {
         roomStatus.value.seconds = Date.now() + roomStatus.value.seconds * 1000;
       }
+      emitter.emit("refreshCanvas");
+      localStorage.setItem('onlineUsersIn', JSON.stringify(onlineUsers.value.in))
+      localStorage.setItem('onlineUsersOut', JSON.stringify(onlineUsers.value.out))
     });
 
     socket.value.on(DrawEnum.NEXT_ROUND, (data) => {
@@ -101,7 +145,6 @@ export const useGlobalStore = defineStore("global", () => {
       }
       drawHistory.value = [];
       emitter.emit("refreshCanvas");
-      emitter.emit("refreshCanvasImage");
     });
 
     socket.value.on(DrawEnum.REFRESH_ROOM_STATUS, (data) => {
@@ -128,16 +171,23 @@ export const useGlobalStore = defineStore("global", () => {
           title: "",
         },
       };
+      localStorage.removeItem('onlineUsersIn')
+      localStorage.removeItem('onlineUsersOut')
+    });
+
+    socket.value.on(DrawEnum.REFRESH_CANVAS_IMAGE, () => {
+      emitter.emit("refreshCanvasImage");
     });
 
     socket.value.on("connect_error", (error) => {
-      console.error("Socket.IO错误:", error, error.message);
+      // console.error("Socket.IO错误:", error, error.message);
     });
 
     socket.value.on("disconnect", () => {
-      console.log("Socket.IO连接已关闭");
+      console.log("已断开服务器");
     });
     await getRoomStatus(roomName);
+    getOnlineUsers()
   }
 
   function getOnlineUsers() {
@@ -198,17 +248,26 @@ export const useGlobalStore = defineStore("global", () => {
     }
   }
 
-  function nextRound(imageUrl: string) {
-    socket.value?.emit(DrawEnum.NEXT_ROUND, {
+  function nextRound() {
+    const params = {
       round: roomStatus.value.round,
       seat: roomStatus.value.roomUserList[roomStatus.value.round].position,
       startGameId: roomStatus.value.startGameId,
-      imageUrl,
-    });
+      imageUrl: '', // 预热
+    }
+    socket.value?.emit(DrawEnum.NEXT_ROUND, params);
+    return params
   }
 
-  function leaveRoom(){
+  function leaveRoom() {
     socket.value?.close()
+  }
+
+  function sendAllRefreshCanvasImage() {
+    socket.value?.emit(DrawEnum.REFRESH_CANVAS_IMAGE, {
+      name: DrawEnum.REFRESH_CANVAS_IMAGE,
+      data: null,
+    });
   }
 
   return {
@@ -229,6 +288,7 @@ export const useGlobalStore = defineStore("global", () => {
     isStart,
     roomStatus,
     nextRound,
-    standUp
+    standUp,
+    sendAllRefreshCanvasImage
   };
 });

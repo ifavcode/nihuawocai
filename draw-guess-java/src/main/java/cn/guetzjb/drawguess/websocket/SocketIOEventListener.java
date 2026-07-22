@@ -64,7 +64,11 @@ public class SocketIOEventListener {
         });
 
         ns.addEventListener(DrawEnum.NEXT_ROUND.getName(), GameRoundDTO.class, (client, data, ackRequest) -> {
-            webSocketService.nextRound(client, data);
+            webSocketService.nextRound(data);
+        });
+
+        ns.addEventListener(DrawEnum.REFRESH_CANVAS_IMAGE.getName(), Void.class, (client, data, ackRequest) -> {
+            webSocketService.refreshCanvasImage(client);
         });
 
         socketIOServer.start();

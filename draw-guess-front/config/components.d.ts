@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AAffix: typeof import('ant-design-vue/es')['Affix']
     AAvatar: typeof import('ant-design-vue/es')['Avatar']
     AButton: typeof import('ant-design-vue/es')['Button']
     AInput: typeof import('ant-design-vue/es')['Input']
@@ -18,7 +19,9 @@ declare module 'vue' {
     IInput: typeof import('./../src/components/IInput/index.vue')['default']
     Index: typeof import('./../src/views/index/index.vue')['default']
     MessageBox: typeof import('./../src/views/index/MessageBox.vue')['default']
+    Navbar: typeof import('./../src/views/navbar/index.vue')['default']
     OnlineUserBar: typeof import('./../src/components/OnlineUserBar.vue')['default']
+    Profile: typeof import('./../src/views/profile/index.vue')['default']
     RainbowButton: typeof import('./../src/components/RainbowButton/index.vue')['default']
     RippleButton: typeof import('./../src/components/RippleButton/index.vue')['default']
     RoomTopInfo: typeof import('./../src/components/RoomTopInfo.vue')['default']

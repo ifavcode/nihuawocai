@@ -34,7 +34,7 @@ public class StartGame {
 
     private Date creteTime;
 
-    @OneToMany(mappedBy = "startGame")
+    @OneToMany(mappedBy = "startGame",cascade = CascadeType.ALL)
     @JsonIgnoreProperties({"startGame", "user"})
     private List<GameRound> gameRoundList;
 

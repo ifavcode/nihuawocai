@@ -30,6 +30,7 @@ async function getRoomUserInfo() {
     const { data: res } = await getRoomUserInfoApi((roomName as string) || '')
     if (res.data) {
       roomUser.value = res.data
+      document.title = roomUser.value.nickname + '的房间（你画我猜）'
     }
   } catch (error) {
 

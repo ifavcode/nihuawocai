@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import IndexView from "../views/index/index.vue";
 import TestPage from "@/views/TestPage/index.vue";
+import Profile from "@/views/profile/index.vue";
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -28,6 +29,14 @@ const router = createRouter({
           component: TestPage,
           meta: {
             title: '测试页'
+          }
+        },
+        {
+          name: 'profile',
+          path: "/profile",
+          component: Profile,
+          meta: {
+            title: '我的'
           }
         },
       ],

@@ -17,6 +17,7 @@ public enum DrawEnum {
     GUESS_CORRECT("guess_correct"),
     REFRESH_ROOM_STATUS("refresh_room_status"),
     STAND_UP("stand_up"),
+    REFRESH_CANVAS_IMAGE("refresh_canvas_image"),
     ;
 
     private final String name;

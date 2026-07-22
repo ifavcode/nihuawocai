@@ -44,3 +44,19 @@ export function getDrawRecommendApi(
     },
   });
 }
+
+export function saveGameRoundByStartGameApi(data: any): Promise<AxiosResponse<R<void>>> {
+  return client.post("/draw/gameRoundByStartGame", data, {
+    headers: {
+      isToken: true,
+    },
+  });
+}
+
+export function getOnlineRoom(): Promise<AxiosResponse<R<{ roomName: string, roomUserList: Record<string, any>[] }[]>>> {
+  return client.get("/draw/onlineRoom", {
+    headers: {
+      isToken: true,
+    },
+  });
+}

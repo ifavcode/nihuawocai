@@ -1,4 +1,4 @@
-import type { R, User, UserDTO, UserUnDTO } from "@/types";
+import type { R, User, UserUnDTO } from "@/types";
 import client from "@/utils/request";
 import type { AxiosResponse } from "axios";
 
