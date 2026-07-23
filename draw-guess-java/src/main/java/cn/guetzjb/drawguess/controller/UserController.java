@@ -13,10 +13,7 @@ import cn.guetzjb.drawguess.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -84,5 +81,38 @@ public class UserController {
             set.add(build);
         }
         return R.ok(set);
+    }
+
+    @PostMapping("/updateProfile")
+    public R updateProfile(@RequestBody UserDTO userDTO) {
+        Optional<User> byId = userRepository.findById(StpUtil.getLoginIdAsLong());
+        if (byId.isEmpty()) {
+            return R.failed();
+        }
+        User user = byId.get();
+        user.setAvatar(userDTO.getAvatar());
+        user.setNickname(userDTO.getNickname());
+        userRepository.save(user);
+        StpUtil.getSession().set("user", user);
+        return R.ok();
+    }
+
+    public record ChangePwd(String rawPassword, String newPassword) {
+    }
+
+    @PostMapping("/changePwd")
+    public R changePwd(@RequestBody ChangePwd changePwd) {
+        Optional<User> byId = userRepository.findById(StpUtil.getLoginIdAsLong());
+        if (byId.isEmpty()) {
+            return R.failed();
+        }
+        User user = byId.get();
+        if (!user.getPassword().equals(changePwd.rawPassword)) {
+            return R.failed("旧密码不匹配");
+        }
+        user.setPassword(changePwd.newPassword);
+        userRepository.save(user);
+        StpUtil.getSession().set("user", user);
+        return R.ok();
     }
 }

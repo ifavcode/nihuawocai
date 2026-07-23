@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { getDrawRecommendApi, getOnlineRoom } from '@/api/draw';
-import { getProfileApi, getRoomUserInfoBatchApi } from '@/api/user';
+import { getRoomUserInfoBatchApi } from '@/api/user';
 import { useGlobalStore } from '@/store/globalStore';
 import { useUserStore } from '@/store/userStore';
 import { Constant, type GameRound, type UserUnDTO } from '@/types';
-import { autoRegisterAndLogin, formatDateTimeNoYear } from '@/utils';
-import { message, Modal } from 'ant-design-vue';
-import Cookies from 'js-cookie'
+import { formatDateTimeNoYear } from '@/utils';
+import { Modal } from 'ant-design-vue';
 import { Icon } from '@iconify/vue'
 import NavBar from '@/views/navbar/index.vue'
+
+const isLoggedIn = computed(() => !!userStore.user.id)
 
 const historyRoom = ref<UserUnDTO[]>([])
 const onlineRoom = ref<{
@@ -21,32 +22,7 @@ const userStore = useUserStore()
 const globalStore = useGlobalStore()
 const recommendList = ref<GameRound[]>([])
 
-async function autoLogin(cnt: number) {
-  if (cnt > 3) return
-  const token = Cookies.get(Constant.JWT_HEADER_NAME)
-  if (!token) {
-    try {
-      await autoRegisterAndLogin()
-      const { data: res } = await getProfileApi()
-      userStore.user = res.data
-    } catch (error) {
-      message.error('应用启动失败!', 5)
-    }
-  } else {
-    try {
-      const { data: res } = await getProfileApi()
-      userStore.user = res.data
-      return true
-    } catch (error) {
-      Cookies.remove(Constant.JWT_HEADER_NAME)
-      autoLogin(cnt + 1)
-      return false
-    }
-  }
-}
-
 async function initHistoryRoom() {
-  await autoLogin(0)
   const historyRoomStorage = localStorage.getItem(Constant.HISTORY_ROOM)
   if (historyRoomStorage) {
     const historyRoomTmp: Record<string, any>[] = JSON.parse(historyRoomStorage)
@@ -65,7 +41,8 @@ async function initHistoryRoom() {
 }
 
 function enterMyRoom() {
-  if (userStore.user.username) {
+
+  if (isLoggedIn.value) {
     router.push({
       name: 'room',
       query: {
@@ -73,11 +50,17 @@ function enterMyRoom() {
       }
     })
   } else {
-    window.$message.error('进入失败，请重试')
+    window.$message.warning('未登录，请先登录')
+    router.push({ name: 'profile' })
   }
 }
 
 function enterPublicRoom() {
+  if (!isLoggedIn.value) {
+    window.$message.warning('未登录，请先登录')
+    router.push({ name: 'profile' })
+    return
+  }
   router.push({
     name: 'room',
     query: {
@@ -87,6 +70,11 @@ function enterPublicRoom() {
 }
 
 function enterRoom(roomName: string) {
+  if (!isLoggedIn.value) {
+    window.$message.warning('未登录，请先登录')
+    router.push({ name: 'profile' })
+    return
+  }
   router.push({
     name: 'room',
     query: {
@@ -141,6 +129,7 @@ function isRoomGaming(room: typeof onlineRoom.value[number]): boolean {
   return room.roomUserList.some((u: Record<string, any>) => u.score > 0)
 }
 
+let timer: number
 async function initOnlineRoom() {
   const res = await getOnlineRoom()
   if (res.data) {
@@ -151,7 +140,14 @@ async function initOnlineRoom() {
 onMounted(() => {
   initHistoryRoom()
   initOnlineRoom()
+  timer = setInterval(() => {
+    initOnlineRoom()
+  }, 1000 * 10)
   getDrawRecommend()
+})
+
+onBeforeUnmount(() => {
+  clearInterval(timer)
 })
 
 </script>

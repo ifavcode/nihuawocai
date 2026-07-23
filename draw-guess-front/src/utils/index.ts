@@ -1,11 +1,12 @@
 import { type ClassValue, clsx } from "clsx";
 import dayjs from "dayjs";
 import { twMerge } from "tailwind-merge";
-
+import Cookies from 'js-cookie'
 import mitt from "mitt";
-import type { RoomStatus, User, UserDTO } from "@/types";
-import { loginApi, registerApi } from "@/api/user";
+import { Constant, type RoomStatus, type User, type UserDTO } from "@/types";
+import { getProfileApi, loginApi, registerApi } from "@/api/user";
 import { nanoid } from "nanoid";
+import { useUserStore } from "@/store/userStore";
 
 type Events = {
   refreshCanvas: void;
@@ -13,6 +14,7 @@ type Events = {
   refreshCanvasImage: void;
   guessCorrect: UserDTO;
   testEvent: void;
+  loginSuccess: void;
 };
 const emitter = mitt<Events>();
 
@@ -47,4 +49,16 @@ async function autoRegisterAndLogin() {
   }
 }
 
-export { emitter, formatDateTime, formatDate, cn, autoRegisterAndLogin, formatDateTimeNoYear };
+async function autoLogin() {
+  const token = Cookies.get(Constant.JWT_HEADER_NAME)
+  if (!token) return
+  const { data: res } = await getProfileApi()
+  if (res.data) {
+    useUserStore().user = res.data
+    nextTick(() => {
+      emitter.emit('loginSuccess')
+    })
+  }
+}
+
+export { emitter, formatDateTime, formatDate, cn, autoRegisterAndLogin, formatDateTimeNoYear, autoLogin };

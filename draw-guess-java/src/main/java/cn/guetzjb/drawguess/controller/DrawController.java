@@ -1,5 +1,6 @@
 package cn.guetzjb.drawguess.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.guetzjb.drawguess.entity.*;
 import cn.guetzjb.drawguess.repository.GameRoundRepository;
 import cn.guetzjb.drawguess.repository.StartGameRepository;
@@ -45,6 +46,14 @@ public class DrawController {
     @GetMapping("/recommend")
     public R recommend() {
         return R.ok(gameRoundRepository.findTop12ValidImage());
+    }
+
+    @GetMapping("/profileRecently")
+    public R profileRecently() {
+        if (!StpUtil.isLogin()) {
+            return R.failed("未登录");
+        }
+        return R.ok(gameRoundRepository.findTop12ValidImageProfile(StpUtil.getLoginIdAsLong()));
     }
 
     public record GameRoundByStartGame(long startGameId, String imageUrl) {

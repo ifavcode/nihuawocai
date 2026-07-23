@@ -5,7 +5,7 @@ export enum Constant {
 
 export interface R<T> {
   code: number;
-  message: string;
+  msg: string;
   data: T;
 }
 

@@ -2,8 +2,11 @@ package cn.guetzjb.drawguess.utils;
 
 import cn.guetzjb.drawguess.config.AppConfig;
 import com.aliyun.oss.OSS;
+import com.aliyun.oss.internal.OSSHeaders;
 import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.ObjectMetadata;
+import com.aliyun.oss.model.PutObjectRequest;
+import com.aliyun.oss.model.StorageClass;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
@@ -31,7 +34,12 @@ public class UploadUtils {
     public String upload(MultipartFile file) throws IOException {
         String date = createDate();
         String fileName = date + "/" + file.getOriginalFilename();
-        ossClient.putObject(AppConfig.BUCKET, fileName, file.getInputStream());
+        PutObjectRequest putObjectRequest = new PutObjectRequest(AppConfig.BUCKET, fileName, file.getInputStream());
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setHeader(OSSHeaders.OSS_STORAGE_CLASS, StorageClass.Standard.toString());
+        metadata.setObjectAcl(CannedAccessControlList.PublicRead);
+        putObjectRequest.setMetadata(metadata);
+        ossClient.putObject(putObjectRequest);
         return AppConfig.DOMAIN + fileName;
     }
 

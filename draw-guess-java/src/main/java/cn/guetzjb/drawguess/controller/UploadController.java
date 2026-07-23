@@ -5,6 +5,7 @@ import cn.guetzjb.drawguess.exception.ServiceException;
 import cn.guetzjb.drawguess.utils.UploadUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -19,9 +20,19 @@ public class UploadController {
     }
 
     @PostMapping("/base64")
-    public R uploadImage(@RequestBody Base64Img base64) {
+    public R uploadImageBase64(@RequestBody Base64Img base64) {
         try {
             String upload = uploadUtils.upload(base64.url());
+            return R.ok(upload);
+        } catch (IOException e) {
+            throw new ServiceException(e.getMessage());
+        }
+    }
+
+    @PostMapping("/file")
+    public R uploadImage(@RequestPart MultipartFile file) {
+        try {
+            String upload = uploadUtils.upload(file);
             return R.ok(upload);
         } catch (IOException e) {
             throw new ServiceException(e.getMessage());
