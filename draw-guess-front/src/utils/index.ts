@@ -7,6 +7,8 @@ import { Constant, type RoomStatus, type User, type UserDTO } from "@/types";
 import { getProfileApi, loginApi, registerApi } from "@/api/user";
 import { nanoid } from "nanoid";
 import { useUserStore } from "@/store/userStore";
+import { useGlobalStore } from "@/store/globalStore";
+import router from "@/router/index";
 
 type Events = {
   refreshCanvas: void;
@@ -61,4 +63,23 @@ async function autoLogin() {
   }
 }
 
-export { emitter, formatDateTime, formatDate, cn, autoRegisterAndLogin, formatDateTimeNoYear, autoLogin };
+/**
+ * 判断自己是不是在房间
+ * 在房间内调用
+ */
+function inRoom(): boolean {
+  const onlineUsers = useGlobalStore().onlineUsers
+  const roomName = router.currentRoute.value.query.roomName as string | undefined
+  
+  if (!roomName) return false
+  if (!onlineUsers) return false
+  const userId = useUserStore().user.id
+
+  if (!userId) return false
+  const findIn = onlineUsers.in.find(v => v.user.id === userId)
+  const findOut = onlineUsers.out.find(v => v.user.id === userId)
+
+  return !!findIn || !!findOut
+}
+
+export { emitter, formatDateTime, formatDate, cn, autoRegisterAndLogin, formatDateTimeNoYear, autoLogin,inRoom };

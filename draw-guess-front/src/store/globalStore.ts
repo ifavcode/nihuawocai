@@ -8,12 +8,13 @@ import {
   type UserDTO,
   type UserTalkDTO,
 } from "@/types";
-import { emitter } from "@/utils";
+import { emitter, inRoom } from "@/utils";
 import { defineStore } from "pinia";
 import { io, type Socket } from "socket.io-client";
 import Cookies from "js-cookie";
 import { getRoomStatusApi } from "@/api/draw";
 import { useUserStore } from "./userStore";
+import router from "@/router";
 
 const host = window.location.host;
 
@@ -115,6 +116,12 @@ export const useGlobalStore = defineStore("global", () => {
         onlineUsers.value.out.map(v => {
           v.online = onlineOut.includes(v.user.id)
           return v
+        })
+      }
+      if (!inRoom()) {
+        window.$message.warning('已退出房间')
+        router.replace({
+          name: 'hall'
         })
       }
     });
