@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { getDrawRecommendApi, getOnlineRoom } from '@/api/draw';
-import { getRoomUserInfoBatchApi } from '@/api/user';
+import { getProfileApi, getRoomUserInfoBatchApi, wxLogin } from '@/api/user';
 import { useGlobalStore } from '@/store/globalStore';
 import { useUserStore } from '@/store/userStore';
 import { Constant, type GameRound, type UserUnDTO } from '@/types';
 import { formatDateTimeNoYear } from '@/utils';
-import { Modal } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import { Icon } from '@iconify/vue'
+import Cookies from 'js-cookie'
 import NavBar from '@/views/navbar/index.vue'
 
 const isLoggedIn = computed(() => !!userStore.user.id)
@@ -18,6 +19,8 @@ const onlineRoom = ref<{
 }[]>([])
 const historyTimeMap = ref<Record<string, Date>>({})
 const router = useRouter()
+const route = useRoute()
+const { code } = route.query
 const userStore = useUserStore()
 const globalStore = useGlobalStore()
 const recommendList = ref<GameRound[]>([])
@@ -137,7 +140,27 @@ async function initOnlineRoom() {
   }
 }
 
+async function judgeWxLogin() {
+  let curCode = code
+  if (!curCode) {
+    const urlSearch = new URLSearchParams(window.location.search)
+    const cd = urlSearch.get('code')
+    if (cd) {
+      curCode = cd
+    }
+  }
+  if (curCode) {
+    const token = Cookies.get(Constant.JWT_HEADER_NAME)
+    if (token) return
+    await wxLogin(curCode as string)
+    const { data: res } = await getProfileApi()
+    userStore.user = res.data
+    message.success('微信授权登录成功')
+  }
+}
+
 onMounted(() => {
+  judgeWxLogin()
   initHistoryRoom()
   initOnlineRoom()
   timer = setInterval(() => {

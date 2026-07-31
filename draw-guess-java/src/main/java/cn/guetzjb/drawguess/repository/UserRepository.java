@@ -8,6 +8,10 @@ public interface UserRepository extends ListPagingAndSortingRepository<User, Lon
 
     User findByUsername(String username);
 
+    User findByOpenid(String openid);
+
     Long countByUsername(String username);
+
+
 
 }

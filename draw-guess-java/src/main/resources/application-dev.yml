@@ -9,3 +9,9 @@ draw:
   redis:
     host: 127.0.0.1
     password: 123456
+wx:
+  appId:
+  secret:
+  callback: http://127.0.0.1:5173/
+  token:
+  aesKey:

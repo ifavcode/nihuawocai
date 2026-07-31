@@ -75,3 +75,25 @@ export function changePasswordApi(
     },
   });
 }
+
+export function wxAuthorize(
+): Promise<AxiosResponse<string>> {
+  return client.get("/wx/authorize", {
+    headers: {
+      isToken: true,
+    },
+  });
+}
+
+export function wxLogin(
+  code: string
+): Promise<AxiosResponse<string>> {
+  return client.get("/wx/callback", {
+    params: {
+      code
+    },
+    headers: {
+      isToken: true,
+    },
+  });
+}

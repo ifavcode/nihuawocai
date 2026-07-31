@@ -126,3 +126,4 @@ export interface DrawTitle {
   id: number;
   title: string;
 }
+

@@ -46,3 +46,11 @@ sa-token:
   is-log: true
 server:
   port: 8866
+wx:
+  mp:
+    callback: ${wx.callback}
+    configs:
+      - appId: ${wx.appId} # 第一个公众号的appid
+        secret: ${wx.secret} # 公众号的appsecret
+        token: ${wx.token} # 接口配置里的Token值 若无为空
+        aesKey: ${wx.aesKey} # 接口配置里的EncodingAESKey值 若无为空

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { changePasswordApi, getDrawProfileApi, getProfileApi, loginApi, registerApi, updateProfileApi, uploadFileApi } from '@/api/user'
+import { changePasswordApi, getDrawProfileApi, getProfileApi, loginApi, registerApi, updateProfileApi, uploadFileApi, wxAuthorize } from '@/api/user'
 import { useUserStore } from '@/store/userStore'
 import { Constant, type GameRound, type User } from '@/types'
 import { autoRegisterAndLogin, emitter, formatDate } from '@/utils'
@@ -15,6 +15,7 @@ const userStore = useUserStore()
 const username = ref('')
 const password = ref('')
 const loginLoading = ref(false)
+const wechatLoginLoading = ref(false)
 
 // 作品列表
 const recommendList = ref<GameRound[]>([])
@@ -109,6 +110,22 @@ async function handleLogin() {
     message.error('登录失败，请检查用户名和密码')
   } finally {
     loginLoading.value = false
+  }
+}
+
+// 微信登录
+async function handleWechatLogin() {
+  wechatLoginLoading.value = true
+  try {
+    const { data: url } = await wxAuthorize()
+    if (url) {
+      window.location.href = url
+    }
+  } catch (error) {
+    console.warn('微信登录失败:', error)
+    message.error('微信登录失败，请重试')
+  } finally {
+    wechatLoginLoading.value = false
   }
 }
 
@@ -333,6 +350,15 @@ onMounted(() => {
               登录
             </button>
           </div>
+
+          <!-- 微信登录按钮 -->
+          <button
+            class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-500 text-white font-medium text-sm transition-all duration-200 hover:bg-green-600 active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="wechatLoginLoading" @click="handleWechatLogin">
+            <Icon v-if="!wechatLoginLoading" icon="ri:wechat-fill" class="text-lg" />
+            <span v-else class="svg-spinners--ring-resize"></span>
+            微信登录
+          </button>
         </div>
       </div>
 

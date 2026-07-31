@@ -29,6 +29,8 @@ public class User {
 
     private Date createTime;
 
+    private String openid;
+
     @OneToMany(mappedBy = "user")
     @JsonIgnoreProperties({"user", "gameRoundList"})
     private List<StartGame> startGameList;

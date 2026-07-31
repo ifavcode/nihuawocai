@@ -42,16 +42,29 @@ export default defineConfig({
     proxy: {
       "/draw-api": {
         target: "http://localhost:8866",
+        // target: "https://www.guetzjb.cn",
         changeOrigin: true,
         ws: true,
         rewrite: (path) => path.replace(/^\/draw-api/, ""),
       },
       "/draw-socket": {
         target: "http://localhost:9000",
-        changeOrigin: true,
+        changeOrigin: true, 
         ws: true,
         rewrite: (path) => path.replace(/^\/draw-socket/, ""),
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          'antd-vendor': ['ant-design-vue'],
+          'socket-vendor': ['socket.io-client'],
+        },
+      },
+    },
+  },
 });
+  

@@ -377,7 +377,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <div class="w-full flex flex-wrap flex-col items-center ">
+  <div class="w-full flex flex-wrap flex-col items-center">
     <div class="w-full max-w-[680px] relative" ref="drawBoardWrap">
       <div class="w-full h-full absolute top-0 left-0 bg-white" title="等待开始游戏"
         v-if="globalStore.roomStatus.startGameId === -1">
